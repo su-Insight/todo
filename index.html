@@ -1190,7 +1190,8 @@
         let tomorrowTasks = [];
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
-        const API_BASE_URL = 'http://127.0.0.1:5000/api';
+        const API_BASE_URL = '/todo/api';
+        const IMG_BASE_URL = '/todo';
         
         // 页面加载完成后，检查今天是否已经打卡
         window.onload = function() {
@@ -1378,7 +1379,7 @@
                     const data = await response.json();
                     data.files.forEach(fileInfo => {
                         uploadedImages.push({
-                            url: `${API_BASE_URL.replace('/api', '')}${fileInfo.url}`,
+                            url: `${IMG_BASE_URL}${fileInfo.url}`,
                             filename: fileInfo.filename
                         });
                     });
@@ -2051,7 +2052,7 @@
                     
                     images.forEach((img, index) => {
                         const imgElement = document.createElement('img');
-                        imgElement.src = `${API_BASE_URL.replace('/api', '')}${img.url}`;
+                        imgElement.src = `${IMG_BASE_URL}${img.url}`;
                         imgElement.alt = `打卡图片${index + 1}`;
                         imgElement.onclick = () => openImageViewer(images, index);
                         imageList.appendChild(imgElement);
@@ -2089,7 +2090,7 @@
             const viewerImg = document.getElementById('viewerImage');
             const counter = document.getElementById('imageCounter');
             
-            viewerImg.src = `${API_BASE_URL.replace('/api', '')}${images[startIndex].url}`;
+            viewerImg.src = `${IMG_BASE_URL}${images[startIndex].url}`;
             counter.textContent = `${startIndex + 1} / ${images.length}`;
             
             viewer.style.display = 'flex';
@@ -2118,7 +2119,7 @@
             const viewerImg = document.getElementById('viewerImage');
             const counter = document.getElementById('imageCounter');
             
-            viewerImg.src = `${API_BASE_URL.replace('/api', '')}${currentImages[currentImageIndex].url}`;
+            viewerImg.src = `${IMG_BASE_URL}${currentImages[currentImageIndex].url}`;
             counter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
         }
 
