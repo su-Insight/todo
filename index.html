@@ -1931,9 +1931,17 @@
                 daysContainer.appendChild(emptyDay);
             }
 
+            const dayKeys = [];
             for (let day = 1; day <= totalDays; day++) {
-                const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayData = await getHistoryData(dayKey);
+                dayKeys.push(`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+            }
+
+            const historyPromises = dayKeys.map(dayKey => getHistoryData(dayKey));
+            const allHistoryData = await Promise.all(historyPromises);
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dayKey = dayKeys[day - 1];
+                const dayData = allHistoryData[day - 1];
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
                 
