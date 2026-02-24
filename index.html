@@ -1,0 +1,2421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考研打卡</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .streak-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .streak-number {
+            font-size: 72px;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .streak-label {
+            font-size: 18px;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .task-list {
+            list-style: none;
+        }
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        .task-item:hover {
+            background: #e9ecef;
+        }
+        .task-item.completed {
+            background: #d4edda;
+        }
+        .task-checkbox {
+            width: 22px;
+            height: 22px;
+            margin-right: 12px;
+            margin-top: 2px;
+            cursor: pointer;
+            accent-color: #28a745;
+        }
+        .task-content {
+            flex: 1;
+        }
+        .task-text {
+            font-size: 16px;
+            color: #333;
+        }
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        .task-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: white;
+        }
+        .add-task {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .add-task input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .add-task input:focus {
+            border-color: #667eea;
+        }
+        .tag-input {
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            cursor: text;
+            width: 120px;
+        }
+        .tag-input:focus {
+            border-color: #667eea;
+        }
+        .add-task button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .add-task button:hover {
+            background: #5568d3;
+        }
+        .upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9fa;
+        }
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #e9ecef;
+        }
+        .upload-icon {
+            font-size: 48px;
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        .upload-text {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .preview-item .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .checkin-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .checkin-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+        .checkin-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .status-message {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        .status-message.show {
+            display: block;
+        }
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .delete-task {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .delete-task:hover {
+            opacity: 1;
+        }
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .celebration-content {
+            text-align: center;
+            animation: bounceIn 0.6s ease;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .celebration-emoji {
+            font-size: 120px;
+            animation: rotate 1s ease-in-out infinite;
+        }
+        @keyframes rotate {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+        }
+        .celebration-title {
+            font-size: 48px;
+            color: #ffd700;
+            text-shadow: 0 0 20px #ffd700, 0 0 40px #ff6b6b;
+            margin: 20px 0;
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+        @keyframes glow {
+            from { text-shadow: 0 0 20px #ffd700, 0 0 40px #ff6b6b; }
+            to { text-shadow: 0 0 30px #ffd700, 0 0 60px #ff6b6b, 0 0 80px #4ecdc4; }
+        }
+        .celebration-message {
+            font-size: 24px;
+            color: white;
+            margin: 15px 0;
+            animation: slideUp 0.8s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .celebration-streak {
+            font-size: 36px;
+            color: #ff6b6b;
+            margin: 20px 0;
+            font-weight: bold;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            top: -20px;
+            animation: confettiFall 3s linear forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        .close-celebration {
+            margin-top: 30px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: slideUp 1s ease 0.5s both;
+        }
+        .close-celebration:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .star {
+            position: absolute;
+            font-size: 30px;
+            animation: starFloat 2s ease-in-out infinite;
+        }
+        @keyframes starFloat {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+            50% { transform: translateY(-20px) scale(1.2); opacity: 0.8; }
+        }
+        .tomorrow-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            animation: fadeIn 0.3s ease;
+        }
+        .tomorrow-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+        .tomorrow-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .tomorrow-task-list {
+            margin-bottom: 20px;
+        }
+        .tomorrow-task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .tomorrow-task-text {
+            flex: 1;
+            font-size: 15px;
+            color: #333;
+        }
+        .tomorrow-task-tag {
+            margin-left: 10px;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            color: white;
+        }
+        .tomorrow-task-delete {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 18px;
+            margin-left: 10px;
+            opacity: 0.6;
+            transition: opacity 0.3s;
+        }
+        .tomorrow-task-delete:hover {
+            opacity: 1;
+        }
+        .tomorrow-add {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .tomorrow-add input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+        .tomorrow-add input:focus {
+            border-color: #667eea;
+        }
+        .tomorrow-add .tag-input {
+            width: 120px;
+        }
+        .tomorrow-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .tomorrow-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tomorrow-btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .tomorrow-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .tomorrow-btn-secondary {
+            background: #e9ecef;
+            color: #333;
+        }
+        .tomorrow-btn-secondary:hover {
+            background: #dee2e6;
+        }
+        .tomorrow-empty {
+            text-align: center;
+            color: #6c757d;
+            padding: 30px;
+        }
+        .tomorrow-empty-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .calendar-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .calendar-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        .calendar-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1002;
+            animation: fadeIn 0.3s ease;
+        }
+        .calendar-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .calendar-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+        .calendar-nav-btn {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .calendar-nav-btn:hover {
+            background: #5568d3;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .calendar-day-header {
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+        }
+        .calendar-day {
+            min-height: 80px;
+            padding: 5px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .calendar-day:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+        .calendar-day.today {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .calendar-day-number {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .calendar-day-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+        .calendar-day-tag {
+            font-size: 10px;
+            padding: 2px 5px;
+            border-radius: 8px;
+            color: white;
+        }
+        .calendar-day.completed {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 16px;
+        }
+        .calendar-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+        .calendar-close:hover {
+            color: #333;
+        }
+        .day-view-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1003;
+            animation: fadeIn 0.3s ease;
+        }
+        .day-view-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+        .day-view-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .day-view-section {
+            margin-bottom: 20px;
+        }
+        .day-view-section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .day-view-task {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .day-view-task.completed {
+            background: #d4edda;
+        }
+        .day-view-task-text {
+            flex: 1;
+            font-size: 15px;
+            color: #333;
+        }
+        .day-view-task.completed .day-view-task-text {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        .day-view-task-time {
+            font-size: 12px;
+            color: #666;
+            margin-left: 10px;
+        }
+        .day-view-task-tag {
+            margin-left: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: white;
+        }
+        .day-view-empty {
+            text-align: center;
+            color: #6c757d;
+            padding: 30px;
+        }
+        .day-view-empty-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .day-view-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+        .day-view-close:hover {
+            color: #333;
+        }
+        .image-carousel {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+        .image-list {
+            display: flex;
+            gap: 10px;
+        }
+        .image-list img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .image-list img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .image-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1005;
+        }
+        .image-viewer-content {
+            max-width: 90%;
+            max-height: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-viewer-content img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+            cursor: zoom-in;
+        }
+        .image-viewer-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 36px;
+            color: white;
+            cursor: pointer;
+            transition: color 0.3s;
+            z-index: 1006;
+        }
+        .image-viewer-close:hover {
+            color: #f093fb;
+        }
+        .image-viewer-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 48px;
+            padding: 20px 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+            z-index: 1006;
+        }
+        .image-viewer-nav:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+        .image-viewer-prev {
+            left: 20px;
+        }
+        .image-viewer-next {
+            right: 20px;
+        }
+        .image-viewer-counter {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 1006;
+        }
+        .report-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(240, 147, 251, 0.5);
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .report-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.6);
+        }
+        .report-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1004;
+            animation: fadeIn 0.3s ease;
+        }
+        .report-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .report-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .report-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+        .report-close:hover {
+            color: #333;
+        }
+        .report-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .report-tab {
+            padding: 10px 20px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .report-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .report-tab:hover {
+            background: #e9ecef;
+        }
+        .report-tab.active:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #65409e 100%);
+        }
+        .report-content-section {
+            display: none;
+        }
+        .report-content-section.active {
+            display: block;
+        }
+        .report-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        .report-summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .report-summary-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .report-summary-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .report-task-list {
+            margin-bottom: 20px;
+        }
+        .report-task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .report-task-date {
+            font-size: 12px;
+            color: #666;
+            width: 80px;
+        }
+        .report-task-text {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+        .report-task-tag {
+            margin-left: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: white;
+        }
+        .report-empty {
+            text-align: center;
+            color: #6c757d;
+            padding: 40px;
+        }
+        .report-empty-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="streak-card">
+            <div class="streak-number" id="streakCount">7</div>
+            <div class="streak-label">连续打卡天数</div>
+        </div>
+
+        <div class="card" id="todayTasksCard">
+            <div class="card-title">
+                📋 今日任务
+            </div>
+            <ul class="task-list" id="taskList">
+                <li class="task-item">
+                    <input type="checkbox" class="task-checkbox" onchange="updateCheckinButton(); trackTaskCompletion(this)">
+                    <div class="task-content">
+                        <div class="task-text">完成数学复习第3章</div>
+                        <div class="task-tags">
+                            <span class="tag" style="background: #ff6b6b">数学</span>
+                        </div>
+                    </div>
+                    <button class="delete-task" onclick="deleteTask(this)">×</button>
+                </li>
+                <li class="task-item">
+                    <input type="checkbox" class="task-checkbox" onchange="updateCheckinButton(); trackTaskCompletion(this)">
+                    <div class="task-content">
+                        <div class="task-text">背诵英语单词100个</div>
+                        <div class="task-tags">
+                            <span class="tag" style="background: #4ecdc4">英语</span>
+                        </div>
+                    </div>
+                    <button class="delete-task" onclick="deleteTask(this)">×</button>
+                </li>
+                <li class="task-item">
+                    <input type="checkbox" class="task-checkbox" onchange="updateCheckinButton(); trackTaskCompletion(this)">
+                    <div class="task-content">
+                        <div class="task-text">政治选择题练习</div>
+                        <div class="task-tags">
+                            <span class="tag" style="background: #45b7d1">政治</span>
+                        </div>
+                    </div>
+                    <button class="delete-task" onclick="deleteTask(this)">×</button>
+                </li>
+            </ul>
+            <div class="add-task">
+                <input type="text" id="newTaskInput" placeholder="添加新任务...">
+                <input type="text" id="tagInput" class="tag-input" placeholder="标签">
+                <button onclick="addTask()">添加</button>
+            </div>
+        </div>
+
+        <div class="card" id="tomorrowTasksCard" style="display: none;">
+            <div class="card-title">
+                📅 明日任务
+            </div>
+            <ul class="task-list" id="tomorrowTaskListPage">
+                <li class="task-item">
+                    <div class="task-content">
+                        <div class="task-text">准备明日学习计划</div>
+                        <div class="task-tags">
+                            <span class="tag" style="background: #96ceb4">计划</span>
+                        </div>
+                    </div>
+                    <button class="delete-task" onclick="deleteTomorrowTaskPage(0)">×</button>
+                </li>
+            </ul>
+            <div class="add-task">
+                <input type="text" id="newTomorrowTaskInput" placeholder="添加明日任务...">
+                <input type="text" id="newTomorrowTagInput" class="tag-input" placeholder="标签">
+                <button onclick="addTomorrowTaskPage()">添加</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                📸 上传学习图片
+            </div>
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📷</div>
+                <div class="upload-text">点击或拖拽上传图片（支持多张）</div>
+                <input type="file" id="fileInput" multiple accept="image/*" style="display: none" onchange="handleFileSelect(event)">
+            </div>
+            <div class="image-preview" id="imagePreview"></div>
+        </div>
+
+        <button class="checkin-btn" id="checkinBtn" onclick="checkin()" disabled>
+            🎯 打卡
+        </button>
+
+        <div class="status-message" id="statusMessage"></div>
+    </div>
+
+    <button class="calendar-btn" onclick="openCalendar()">📅</button>
+    <button class="report-btn" onclick="openReportModal()">📊</button>
+
+    <div class="calendar-modal" id="calendarModal">
+        <button class="calendar-close" onclick="closeCalendar()">×</button>
+        <div class="calendar-content">
+            <div class="calendar-header">
+                <div class="calendar-title" id="calendarTitle">2026年2月</div>
+                <div class="calendar-nav">
+                    <button class="calendar-nav-btn" onclick="prevMonth()">◀ 上月</button>
+                    <button class="calendar-nav-btn" onclick="nextMonth()">下月 ▶</button>
+                </div>
+            </div>
+            <div class="calendar-grid">
+                <div class="calendar-day-header">日</div>
+                <div class="calendar-day-header">一</div>
+                <div class="calendar-day-header">二</div>
+                <div class="calendar-day-header">三</div>
+                <div class="calendar-day-header">四</div>
+                <div class="calendar-day-header">五</div>
+                <div class="calendar-day-header">六</div>
+            </div>
+            <div class="calendar-grid" id="calendarDays"></div>
+        </div>
+    </div>
+
+    <div class="day-view-modal" id="dayViewModal">
+        <button class="day-view-close" onclick="closeDayView()">×</button>
+        <div class="day-view-content">
+            <div class="day-view-title" id="dayViewTitle">2026年2月24日</div>
+            
+            <div class="day-view-section">
+                <div class="day-view-section-title">✅ 已完成任务</div>
+                <div id="dayViewCompletedTasks"></div>
+            </div>
+            
+            <div class="day-view-section">
+                <div class="day-view-section-title">⏳ 未完成任务</div>
+                <div id="dayViewUncompletedTasks"></div>
+            </div>
+            
+            <div class="day-view-section">
+                <div class="day-view-section-title">📸 打卡图片</div>
+                <div id="dayViewImages"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="report-modal" id="reportModal">
+        <div class="report-content">
+            <div class="report-header">
+                <div class="report-title">📊 学习报告</div>
+                <button class="report-close" onclick="closeReportModal()">×</button>
+            </div>
+            <div class="report-tabs">
+                <button class="report-tab active" onclick="switchReportTab('daily')">日报</button>
+                <button class="report-tab" onclick="switchReportTab('weekly')">周报</button>
+                <button class="report-tab" onclick="switchReportTab('monthly')">月报</button>
+            </div>
+            <div class="report-content-section active" id="dailyReport">
+                <div id="dailyReportContent"></div>
+            </div>
+            <div class="report-content-section" id="weeklyReport">
+                <div id="weeklyReportContent"></div>
+            </div>
+            <div class="report-content-section" id="monthlyReport">
+                <div id="monthlyReportContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="celebration-overlay" id="celebrationOverlay">
+        <div class="stars" id="stars"></div>
+        <div class="celebration-content">
+            <div class="celebration-emoji">🏆</div>
+            <div class="celebration-title">太棒了！</div>
+            <div class="celebration-message" id="celebrationMessage">今日打卡成功！</div>
+            <div class="celebration-streak" id="celebrationStreak">连续打卡 8 天</div>
+            <div class="celebration-message" style="font-size: 18px; color: #ddd;">坚持下去，梦想就在前方！✨</div>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px;">
+                <button class="close-celebration" onclick="closeCelebration()" style="margin: 0; animation: none;">继续加油 💪</button>
+                <button class="close-celebration" onclick="openTomorrowModal()" style="margin: 0; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); animation: none;">规划明日任务 📅</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="tomorrow-modal" id="tomorrowModal">
+        <div class="tomorrow-content">
+            <div class="tomorrow-title">📅 规划明日任务</div>
+            <div class="tomorrow-task-list" id="tomorrowTaskList">
+                <div class="tomorrow-empty">
+                    <div class="tomorrow-empty-icon">📝</div>
+                    <div>还没有添加明日任务</div>
+                </div>
+            </div>
+            <div class="tomorrow-add">
+                <input type="text" id="tomorrowTaskInput" placeholder="输入明日任务...">
+                <input type="text" id="tomorrowTagInput" class="tag-input" placeholder="标签">
+                <button class="tomorrow-btn tomorrow-btn-primary" onclick="addTomorrowTask()" style="flex: 0 0 auto; padding: 10px 20px;">添加</button>
+            </div>
+            <div class="tomorrow-buttons">
+                <button class="tomorrow-btn tomorrow-btn-secondary" onclick="closeTomorrowModal()">取消</button>
+                <button class="tomorrow-btn tomorrow-btn-primary" onclick="saveTomorrowTasks()">保存并关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="image-viewer" id="imageViewer">
+        <button class="image-viewer-close" onclick="closeImageViewer()">×</button>
+        <button class="image-viewer-nav image-viewer-prev" onclick="prevImage()">❮</button>
+        <button class="image-viewer-nav image-viewer-next" onclick="nextImage()">❯</button>
+        <div class="image-viewer-content">
+            <img id="viewerImage" src="" alt="打卡图片" onclick="toggleZoom()">
+        </div>
+        <div class="image-viewer-counter" id="imageCounter">1 / 1</div>
+    </div>
+
+    <script>
+        let uploadedImages = [];
+        let tomorrowTasks = [];
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        const API_BASE_URL = 'http://127.0.0.1:5000/api';
+        
+        // 页面加载完成后，检查今天是否已经打卡
+        window.onload = function() {
+            loadStreak();
+            checkTodayStatus();
+        };
+        
+        // 加载连续打卡天数
+        async function loadStreak() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/streak`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('streakCount').textContent = data.streak;
+                }
+            } catch (error) {
+                console.error('加载连续打卡天数失败:', error);
+            }
+        }
+        
+        // 检查今天的打卡状态
+        async function checkTodayStatus() {
+            const todayKey = getTodayKey();
+            
+            // 检查今天是否已经打卡（通过检查History表）
+            const historyResponse = await fetch(`${API_BASE_URL}/history/${todayKey}`);
+            const hasCheckedIn = historyResponse.ok;
+            
+            if (hasCheckedIn) {
+                // 今天已经打卡，显示明日任务区域
+                document.getElementById('todayTasksCard').style.display = 'none';
+                document.getElementById('tomorrowTasksCard').style.display = 'block';
+                // 显示今日任务已完成提示
+                showMessage('今日任务已全部完成！🎉', 'success');
+                loadTomorrowTasksPage();
+            } else {
+                // 今天还没打卡，显示今日任务区域并恢复任务状态
+                loadTodayTasks();
+            }
+        }
+        
+        // 加载今日任务的完成状态
+        async function loadTodayTasks() {
+            const todayKey = getTodayKey();
+            console.log('Loading tasks for date:', todayKey);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/${todayKey}`);
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const tasks = await response.json();
+                    console.log('Tasks loaded:', tasks);
+                    
+                    const taskList = document.getElementById('taskList');
+                    taskList.innerHTML = '';
+                    
+                    if (tasks.length === 0) {
+                        console.log('No tasks found for today');
+                        taskList.innerHTML = '<li class="task-item" style="text-align: center; color: #999;">暂无任务，请添加</li>';
+                    }
+                    
+                    tasks.forEach(task => {
+                        const li = document.createElement('li');
+                        li.className = 'task-item';
+                        li.dataset.taskId = task.id;
+                        if (task.completed) {
+                            li.classList.add('completed');
+                            li.dataset.completedTime = task.completedTime;
+                        }
+                        
+                        li.innerHTML = `
+                            <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} onchange="updateCheckinButton(); trackTaskCompletion(this)">
+                            <div class="task-content">
+                                <div class="task-text">${task.text}</div>
+                                <div class="task-tags">
+                                    <span class="tag" style="background: ${task.tagColor}">${task.tag}</span>
+                                </div>
+                            </div>
+                            <button class="delete-task" onclick="deleteTask(this)">×</button>
+                        `;
+                        taskList.appendChild(li);
+                    });
+                    
+                    updateCheckinButton();
+                }
+            } catch (error) {
+                console.error('加载今日任务失败:', error);
+            }
+        }
+        const encouragementMessages = [
+            "今日打卡成功！你是最棒的！",
+            "又坚持了一天！离梦想更近了一步！",
+            "每一分努力都不会白费！加油！",
+            "今天的你，比昨天更强大！",
+            "坚持就是胜利！继续前行！",
+            "你的努力，终将闪耀！",
+            "星光不问赶路人，时光不负有心人！",
+            "今天的汗水，是明天的勋章！",
+            "为梦想而战，你值得最好的！",
+            "每一次打卡，都是对自己的承诺！"
+        ];
+
+        function getTodayKey() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        async function saveHistoryData(dateKey, data) {
+            const response = await fetch(`${API_BASE_URL}/history`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (!response.ok) {
+                throw new Error('保存失败');
+            }
+            
+            return true;
+        }
+
+        async function getHistoryData(dateKey) {
+            const response = await fetch(`${API_BASE_URL}/history/${dateKey}`);
+            
+            if (!response.ok) {
+                return null;
+            }
+            
+            const data = await response.json();
+            return data;
+        }
+
+        function formatDate(date) {
+            return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+        }
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            handleFiles(files);
+        }
+
+        async function handleFiles(files) {
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    await uploadImage(file);
+                }
+            }
+            updateCheckinButton();
+        }
+
+        async function uploadImage(file) {
+            const formData = new FormData();
+            formData.append('images', file);
+            formData.append('date', getTodayKey());
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/images/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    data.files.forEach(fileInfo => {
+                        uploadedImages.push({
+                            url: `${API_BASE_URL.replace('/api', '')}${fileInfo.url}`,
+                            filename: fileInfo.filename
+                        });
+                    });
+                    renderImagePreview();
+                } else {
+                    const errorText = await response.text();
+                    console.error('上传图片失败 - 响应状态:', response.status, errorText);
+                    alert('上传图片失败: ' + response.status);
+                }
+            } catch (error) {
+                console.error('上传图片失败:', error);
+                alert('上传图片失败: ' + error.message);
+            }
+        }
+
+        function renderImagePreview() {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            uploadedImages.forEach((img, index) => {
+                const item = document.createElement('div');
+                item.className = 'preview-item';
+                item.innerHTML = `
+                    <img src="${img.url}" alt="预览">
+                    <button class="remove-btn" onclick="removeImage(${index})">×</button>
+                `;
+                preview.appendChild(item);
+            });
+        }
+
+        function removeImage(index) {
+            uploadedImages.splice(index, 1);
+            renderImagePreview();
+            updateCheckinButton();
+        }
+
+        async function addTask() {
+            const input = document.getElementById('newTaskInput');
+            const tagInput = document.getElementById('tagInput');
+            const taskText = input.value.trim();
+            const tagText = tagInput.value.trim();
+            
+            if (!taskText) return;
+
+            const tagColor = getRandomTagColor();
+            const tagName = tagText || '其他';
+            const todayKey = getTodayKey();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        date: todayKey,
+                        text: taskText,
+                        tag: tagName,
+                        tagColor: tagColor
+                    })
+                });
+                
+                if (response.ok) {
+                    const taskData = await response.json();
+                    const taskList = document.getElementById('taskList');
+                    
+                    const li = document.createElement('li');
+                    li.className = 'task-item';
+                    li.dataset.taskId = taskData.id;
+                    li.innerHTML = `
+                        <input type="checkbox" class="task-checkbox" onchange="updateCheckinButton(); trackTaskCompletion(this)">
+                        <div class="task-content">
+                            <div class="task-text">${taskText}</div>
+                            <div class="task-tags">
+                                <span class="tag" style="background: ${tagColor}">${tagName}</span>
+                            </div>
+                        </div>
+                        <button class="delete-task" onclick="deleteTask(this)">×</button>
+                    `;
+                    taskList.appendChild(li);
+                    
+                    input.value = '';
+                    tagInput.value = '';
+                    updateCheckinButton();
+                }
+            } catch (error) {
+                console.error('添加任务失败:', error);
+            }
+        }
+
+        async function trackTaskCompletion(checkbox) {
+            const taskItem = checkbox.closest('.task-item');
+            const taskId = taskItem.dataset.taskId;
+            
+            if (!taskId) {
+                console.error('任务ID不存在');
+                return;
+            }
+            
+            if (checkbox.checked) {
+                const completedTime = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                taskItem.dataset.completedTime = completedTime;
+            } else {
+                delete taskItem.dataset.completedTime;
+            }
+            
+            taskItem.classList.toggle('completed', checkbox.checked);
+            
+            try {
+                await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        completed: checkbox.checked
+                    })
+                });
+            } catch (error) {
+                console.error('更新任务状态失败:', error);
+            }
+        }
+
+        function getRandomTagColor() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#dda0dd', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        async function deleteTask(btn) {
+            const taskItem = btn.closest('.task-item');
+            const taskId = taskItem.dataset.taskId;
+            
+            if (!taskId) {
+                taskItem.remove();
+                updateCheckinButton();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    taskItem.remove();
+                    updateCheckinButton();
+                }
+            } catch (error) {
+                console.error('删除任务失败:', error);
+            }
+        }
+
+        function updateCheckinButton() {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            const allCompleted = Array.from(checkboxes).every(cb => cb.checked);
+            const hasImages = uploadedImages.length > 0;
+            const checkinBtn = document.getElementById('checkinBtn');
+
+            checkinBtn.disabled = !(allCompleted && hasImages);
+        }
+
+        async function checkin() {
+            const checkboxes = document.querySelectorAll('.task-checkbox');
+            const allCompleted = Array.from(checkboxes).every(cb => cb.checked);
+            const hasImages = uploadedImages.length > 0;
+
+            if (!allCompleted) {
+                showMessage('请先完成所有任务！', 'error');
+                return;
+            }
+
+            if (!hasImages) {
+                showMessage('请至少上传一张图片！', 'error');
+                return;
+            }
+
+            // 获取最新的连续打卡天数
+            let newStreak = 1;
+            try {
+                const streakResponse = await fetch(`${API_BASE_URL}/streak`);
+                if (streakResponse.ok) {
+                    const streakData = await streakResponse.json();
+                    newStreak = streakData.streak + 1;
+                }
+            } catch (error) {
+                console.error('获取连续打卡天数失败:', error);
+            }
+            
+            document.getElementById('streakCount').textContent = newStreak;
+            
+            const todayKey = getTodayKey();
+            
+            await saveHistoryData(todayKey, {
+                date: todayKey,
+                tasks: [],
+                images: uploadedImages.length,
+                checkinTime: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+            });
+            
+            showCelebration(newStreak);
+
+            // 清空上传的图片，但保留任务的完成状态
+            uploadedImages = [];
+            document.getElementById('imagePreview').innerHTML = '';
+            updateCheckinButton();
+            
+            // 显示今日任务已完成的提示
+            showTodayCompletedMessage();
+            
+            // 隐藏今日任务区域，显示明日任务区域
+            document.getElementById('todayTasksCard').style.display = 'none';
+            document.getElementById('tomorrowTasksCard').style.display = 'block';
+            
+            // 加载明日任务
+            loadTomorrowTasksPage();
+        }
+
+        function showMessage(text, type) {
+            const msg = document.getElementById('statusMessage');
+            msg.textContent = text;
+            msg.className = `status-message show ${type}`;
+        }
+        
+        function showTodayCompletedMessage() {
+            showMessage('今日任务已全部完成！🎉', 'success');
+        }
+        
+        // 明日任务管理（页面版）
+        async function loadTomorrowTasksPage() {
+            const response = await fetch(`${API_BASE_URL}/tomorrow`);
+            const taskList = document.getElementById('tomorrowTaskListPage');
+            
+            if (!response.ok) {
+                taskList.innerHTML = `
+                    <li class="task-item">
+                        <div class="task-content">
+                            <div class="task-text">还没有添加明日任务</div>
+                            <div class="task-tags">
+                                <span class="tag" style="background: #96ceb4">计划</span>
+                            </div>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+            
+            const tomorrowTasks = await response.json();
+            
+            if (tomorrowTasks.length === 0) {
+                taskList.innerHTML = `
+                    <li class="task-item">
+                        <div class="task-content">
+                            <div class="task-text">还没有添加明日任务</div>
+                            <div class="task-tags">
+                                <span class="tag" style="background: #96ceb4">计划</span>
+                            </div>
+                        </div>
+                    </li>
+                `;
+                return;
+            }
+            
+            taskList.innerHTML = '';
+            tomorrowTasks.forEach((task, index) => {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                li.innerHTML = `
+                    <div class="task-content">
+                        <div class="task-text">${task.text}</div>
+                        <div class="task-tags">
+                            <span class="tag" style="background: ${task.tagColor}">${task.tag}</span>
+                        </div>
+                    </div>
+                    <button class="delete-task" onclick="deleteTomorrowTaskPage(${task.id})">&times;</button>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+        
+        async function addTomorrowTaskPage() {
+            const input = document.getElementById('newTomorrowTaskInput');
+            const tagInput = document.getElementById('newTomorrowTagInput');
+            const taskText = input.value.trim();
+            const tagText = tagInput.value.trim();
+            
+            if (!taskText) return;
+
+            const tagColor = getRandomTagColor();
+            const tagName = tagText || '其他';
+
+            const response = await fetch(`${API_BASE_URL}/tomorrow`);
+            if (!response.ok) return;
+            
+            const tomorrowTasks = await response.json();
+            tomorrowTasks.push({
+                text: taskText,
+                tag: tagName,
+                tagColor: tagColor
+            });
+            
+            await fetch(`${API_BASE_URL}/tomorrow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tasks: tomorrowTasks })
+            });
+            
+            input.value = '';
+            tagInput.value = '';
+            loadTomorrowTasksPage();
+        }
+        
+        async function deleteTomorrowTaskPage(taskId) {
+            const response = await fetch(`${API_BASE_URL}/tomorrow`);
+            if (!response.ok) return;
+            
+            const tomorrowTasks = await response.json();
+            const filteredTasks = tomorrowTasks.filter(task => task.id !== taskId);
+            
+            await fetch(`${API_BASE_URL}/tomorrow`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tasks: filteredTasks })
+            });
+            
+            loadTomorrowTasksPage();
+        }
+
+        function showCelebration(streak) {
+            const overlay = document.getElementById('celebrationOverlay');
+            const message = document.getElementById('celebrationMessage');
+            const streakDisplay = document.getElementById('celebrationStreak');
+            
+            const randomMessage = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+            message.textContent = randomMessage;
+            streakDisplay.textContent = `连续打卡 ${streak} 天`;
+            
+            overlay.style.display = 'flex';
+            createConfetti();
+            createStars();
+        }
+
+        function closeCelebration() {
+            const overlay = document.getElementById('celebrationOverlay');
+            overlay.style.display = 'none';
+            
+            const confetti = document.querySelectorAll('.confetti');
+            confetti.forEach(c => c.remove());
+            
+            const stars = document.querySelectorAll('.star');
+            stars.forEach(s => s.remove());
+
+            renderCalendar();
+        }
+
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#ffd700', '#667eea', '#764ba2', '#ff9ff3', '#54a0ff'];
+            const shapes = ['■', '●', '▲', '★', '◆'];
+            
+            for (let i = 0; i < 100; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.fontSize = (Math.random() * 20 + 10) + 'px';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        function createStars() {
+            const starEmojis = ['⭐', '✨', '💫', '🌟', '🎉', '🎊'];
+            const starsContainer = document.getElementById('stars');
+            
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.textContent = starEmojis[Math.floor(Math.random() * starEmojis.length)];
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        document.querySelectorAll('.task-checkbox').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const taskItem = this.closest('.task-item');
+                if (this.checked) {
+                    taskItem.classList.add('completed');
+                } else {
+                    taskItem.classList.remove('completed');
+                }
+            });
+        });
+
+        function openTomorrowModal() {
+            const modal = document.getElementById('tomorrowModal');
+            modal.style.display = 'flex';
+            renderTomorrowTasks();
+        }
+
+        function closeTomorrowModal() {
+            const modal = document.getElementById('tomorrowModal');
+            modal.style.display = 'none';
+        }
+
+        function addTomorrowTask() {
+            const input = document.getElementById('tomorrowTaskInput');
+            const tagInput = document.getElementById('tomorrowTagInput');
+            const taskText = input.value.trim();
+            const tagText = tagInput.value.trim();
+            
+            if (!taskText) return;
+
+            const tagColor = getRandomTagColor();
+            const tagName = tagText || '其他';
+
+            tomorrowTasks.push({
+                text: taskText,
+                tag: tagName,
+                tagColor: tagColor
+            });
+
+            input.value = '';
+            tagInput.value = '';
+            renderTomorrowTasks();
+        }
+
+        function deleteTomorrowTask(index) {
+            tomorrowTasks.splice(index, 1);
+            renderTomorrowTasks();
+        }
+
+        function renderTomorrowTasks() {
+            const taskList = document.getElementById('tomorrowTaskList');
+            
+            if (tomorrowTasks.length === 0) {
+                taskList.innerHTML = `
+                    <div class="tomorrow-empty">
+                        <div class="tomorrow-empty-icon">📝</div>
+                        <div>还没有添加明日任务</div>
+                    </div>
+                `;
+                return;
+            }
+
+            taskList.innerHTML = '';
+            tomorrowTasks.forEach((task, index) => {
+                const item = document.createElement('div');
+                item.className = 'tomorrow-task-item';
+                item.innerHTML = `
+                    <div class="tomorrow-task-text">${task.text}</div>
+                    <div class="tomorrow-task-tag" style="background: ${task.tagColor}">${task.tag}</div>
+                    <button class="tomorrow-task-delete" onclick="deleteTomorrowTask(${index})">×</button>
+                `;
+                taskList.appendChild(item);
+            });
+        }
+
+        function saveTomorrowTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            tomorrowTasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'task-item';
+                li.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" onchange="updateCheckinButton()">
+                    <div class="task-content">
+                        <div class="task-text">${task.text}</div>
+                        <div class="task-tags">
+                            <span class="tag" style="background: ${task.tagColor}">${task.tag}</span>
+                        </div>
+                    </div>
+                    <button class="delete-task" onclick="deleteTask(this)">×</button>
+                `;
+                taskList.appendChild(li);
+            });
+
+            tomorrowTasks = [];
+            closeTomorrowModal();
+            closeCelebration();
+            updateCheckinButton();
+        }
+
+        document.getElementById('tomorrowTaskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTomorrowTask();
+            }
+        });
+
+        async function openCalendar() {
+            const modal = document.getElementById('calendarModal');
+            modal.style.display = 'flex';
+            await renderCalendar();
+        }
+
+        function closeCalendar() {
+            const modal = document.getElementById('calendarModal');
+            modal.style.display = 'none';
+        }
+
+        async function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            await renderCalendar();
+        }
+
+        async function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            await renderCalendar();
+        }
+
+        async function renderCalendar() {
+            const title = document.getElementById('calendarTitle');
+            const daysContainer = document.getElementById('calendarDays');
+            
+            title.textContent = `${currentYear}年${currentMonth + 1}月`;
+            daysContainer.innerHTML = '';
+
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const startDay = firstDay.getDay();
+            const totalDays = lastDay.getDate();
+
+            const today = new Date();
+            const isCurrentMonth = today.getMonth() === currentMonth && today.getFullYear() === currentYear;
+
+            for (let i = 0; i < startDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day';
+                emptyDay.style.background = '#f8f9fa';
+                emptyDay.style.cursor = 'default';
+                daysContainer.appendChild(emptyDay);
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dayKey = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayData = await getHistoryData(dayKey);
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                
+                if (isCurrentMonth && day === today.getDate()) {
+                    dayElement.classList.add('today');
+                }
+
+                let tagsHTML = '';
+                if (dayData && dayData.tasks) {
+                    const completedTasks = dayData.tasks.filter(t => t.completed);
+                    completedTasks.forEach(task => {
+                        tagsHTML += `<span class="calendar-day-tag" style="background: ${task.tagColor}">${task.tag}</span>`;
+                    });
+                }
+
+                dayElement.innerHTML = `
+                    <div class="calendar-day-number">${day}</div>
+                    <div class="calendar-day-tags">${tagsHTML}</div>
+                `;
+
+                dayElement.onclick = () => openDayView(dayKey);
+                daysContainer.appendChild(dayElement);
+            }
+        }
+
+        async function openDayView(dateKey) {
+            console.log('openDayView called with dateKey:', dateKey);
+            
+            const modal = document.getElementById('dayViewModal');
+            const title = document.getElementById('dayViewTitle');
+            const completedContainer = document.getElementById('dayViewCompletedTasks');
+            const uncompletedContainer = document.getElementById('dayViewUncompletedTasks');
+            const imagesContainer = document.getElementById('dayViewImages');
+
+            const [year, month, day] = dateKey.split('-');
+            title.textContent = `${year}年${parseInt(month)}月${parseInt(day)}日`;
+
+            const dayData = await getHistoryData(dateKey);
+            
+            if (!dayData || !dayData.tasks) {
+                completedContainer.innerHTML = `
+                    <div class="day-view-empty">
+                        <div class="day-view-empty-icon">📝</div>
+                        <div>当天没有任务记录</div>
+                    </div>
+                `;
+                uncompletedContainer.innerHTML = '';
+            } else {
+                const completedTasks = dayData.tasks.filter(t => t.completed);
+                const uncompletedTasks = dayData.tasks.filter(t => !t.completed);
+
+                if (completedTasks.length === 0) {
+                    completedContainer.innerHTML = `
+                        <div class="day-view-empty">
+                            <div class="day-view-empty-icon">📝</div>
+                            <div>没有已完成的任务</div>
+                        </div>
+                    `;
+                } else {
+                    completedContainer.innerHTML = '';
+                    completedTasks.forEach(task => {
+                        const taskElement = document.createElement('div');
+                        taskElement.className = 'day-view-task completed';
+                        taskElement.innerHTML = `
+                            <div class="day-view-task-text">${task.text}</div>
+                            <div class="day-view-task-tag" style="background: ${task.tagColor}">${task.tag}</div>
+                            <div class="day-view-task-time">${task.completedTime || ''}</div>
+                        `;
+                        completedContainer.appendChild(taskElement);
+                    });
+                }
+
+                if (uncompletedTasks.length === 0) {
+                    uncompletedContainer.innerHTML = `
+                        <div class="day-view-empty">
+                            <div class="day-view-empty-icon">✅</div>
+                            <div>所有任务都已完成！</div>
+                        </div>
+                    `;
+                } else {
+                    uncompletedContainer.innerHTML = '';
+                    uncompletedTasks.forEach(task => {
+                        const taskElement = document.createElement('div');
+                        taskElement.className = 'day-view-task';
+                        taskElement.innerHTML = `
+                            <div class="day-view-task-text">${task.text}</div>
+                            <div class="day-view-task-tag" style="background: ${task.tagColor}">${task.tag}</div>
+                        `;
+                        uncompletedContainer.appendChild(taskElement);
+                    });
+                }
+            }
+
+            // 加载图片
+            console.log('Loading images for date:', dateKey);
+            try {
+                const response = await fetch(`${API_BASE_URL}/images/date/${dateKey}`);
+                console.log('Image response status:', response.status);
+                const images = await response.json();
+                console.log('Images loaded:', images);
+                
+                if (images.length === 0) {
+                    imagesContainer.innerHTML = `
+                        <div class="day-view-empty">
+                            <div class="day-view-empty-icon">📸</div>
+                            <div>没有上传打卡图片</div>
+                        </div>
+                    `;
+                } else {
+                    imagesContainer.innerHTML = '';
+                    const carouselContainer = document.createElement('div');
+                    carouselContainer.className = 'image-carousel';
+                    
+                    const imageList = document.createElement('div');
+                    imageList.className = 'image-list';
+                    
+                    images.forEach((img, index) => {
+                        const imgElement = document.createElement('img');
+                        imgElement.src = `${API_BASE_URL.replace('/api', '')}${img.url}`;
+                        imgElement.alt = `打卡图片${index + 1}`;
+                        imgElement.onclick = () => openImageViewer(images, index);
+                        imageList.appendChild(imgElement);
+                    });
+                    
+                    carouselContainer.appendChild(imageList);
+                    imagesContainer.appendChild(carouselContainer);
+                }
+            } catch (error) {
+                console.error('加载图片失败:', error);
+                imagesContainer.innerHTML = `
+                    <div class="day-view-empty">
+                        <div class="day-view-empty-icon">❌</div>
+                        <div>加载图片失败</div>
+                    </div>
+                `;
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function closeDayView() {
+            const modal = document.getElementById('dayViewModal');
+            modal.style.display = 'none';
+        }
+
+        let currentImages = [];
+        let currentImageIndex = 0;
+
+        function openImageViewer(images, startIndex) {
+            currentImages = images;
+            currentImageIndex = startIndex;
+            
+            const viewer = document.getElementById('imageViewer');
+            const viewerImg = document.getElementById('viewerImage');
+            const counter = document.getElementById('imageCounter');
+            
+            viewerImg.src = `${API_BASE_URL.replace('/api', '')}${images[startIndex].url}`;
+            counter.textContent = `${startIndex + 1} / ${images.length}`;
+            
+            viewer.style.display = 'flex';
+        }
+
+        function closeImageViewer() {
+            const viewer = document.getElementById('imageViewer');
+            viewer.style.display = 'none';
+        }
+
+        function prevImage() {
+            if (currentImages.length === 0) return;
+            
+            currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+            updateViewerImage();
+        }
+
+        function nextImage() {
+            if (currentImages.length === 0) return;
+            
+            currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+            updateViewerImage();
+        }
+
+        function updateViewerImage() {
+            const viewerImg = document.getElementById('viewerImage');
+            const counter = document.getElementById('imageCounter');
+            
+            viewerImg.src = `${API_BASE_URL.replace('/api', '')}${currentImages[currentImageIndex].url}`;
+            counter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
+        }
+
+        let isZoomed = false;
+        function toggleZoom() {
+            const viewerImg = document.getElementById('viewerImage');
+            isZoomed = !isZoomed;
+            
+            if (isZoomed) {
+                viewerImg.style.transform = 'scale(2)';
+                viewerImg.style.transition = 'transform 0.3s ease';
+            } else {
+                viewerImg.style.transform = 'scale(1)';
+                viewerImg.style.transition = 'transform 0.3s ease';
+            }
+        }
+
+        function openReportModal() {
+            const modal = document.getElementById('reportModal');
+            modal.style.display = 'flex';
+            generateDailyReport();
+        }
+
+        function closeReportModal() {
+            const modal = document.getElementById('reportModal');
+            modal.style.display = 'none';
+        }
+
+        function switchReportTab(tabType) {
+            const tabs = document.querySelectorAll('.report-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            const sections = document.querySelectorAll('.report-content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            document.getElementById(`${tabType}Report`).classList.add('active');
+
+            if (tabType === 'daily') {
+                generateDailyReport();
+            } else if (tabType === 'weekly') {
+                generateWeeklyReport();
+            } else if (tabType === 'monthly') {
+                generateMonthlyReport();
+            }
+        }
+
+        async function generateDailyReport() {
+            const today = new Date();
+            const todayKey = getTodayKey();
+            const todayData = await getHistoryData(todayKey);
+            const content = document.getElementById('dailyReportContent');
+
+            if (!todayData || !todayData.tasks) {
+                content.innerHTML = `
+                    <div class="report-empty">
+                        <div class="report-empty-icon">📅</div>
+                        <div>今日暂无打卡记录</div>
+                        <div style="font-size: 14px; margin-top: 10px;">完成任务后会自动生成日报</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const completedTasks = todayData.tasks.filter(t => t.completed);
+            const totalTasks = todayData.tasks.length;
+            const completionRate = Math.round((completedTasks.length / totalTasks) * 100);
+            const tags = [...new Set(completedTasks.map(t => t.tag))];
+
+            let tasksHTML = '';
+            todayData.tasks.forEach(task => {
+                tasksHTML += `
+                    <div class="report-task-item ${task.completed ? 'completed' : ''}">
+                        <div class="report-task-date">${task.completedTime || '--:--'}</div>
+                        <div class="report-task-text">${task.text}</div>
+                        <div class="report-task-tag" style="background: ${task.tagColor}">${task.tag}</div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = `
+                <div class="report-summary">
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">日期</span>
+                        <span class="report-summary-value">${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">任务总数</span>
+                        <span class="report-summary-value">${totalTasks} 项</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">完成任务</span>
+                        <span class="report-summary-value">${completedTasks.length} 项</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">完成率</span>
+                        <span class="report-summary-value">${completionRate}%</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">涉及主题</span>
+                        <span class="report-summary-value">${tags.join('、')}</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">上传图片</span>
+                        <span class="report-summary-value">${todayData.images || 0} 张</span>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px; font-weight: bold; font-size: 16px; color: #333;">今日任务明细</div>
+                <div class="report-task-list">
+                    ${tasksHTML}
+                </div>
+            `;
+        }
+
+        async function generateWeeklyReport() {
+            const today = new Date();
+            const weekStart = new Date(today);
+            weekStart.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1));
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+
+            const weeklyData = [];
+            for (let i = 0; i < 7; i++) {
+                const currentDate = new Date(weekStart);
+                currentDate.setDate(weekStart.getDate() + i);
+                const dateKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`;
+                const dayData = await getHistoryData(dateKey);
+                if (dayData) {
+                    weeklyData.push({ date: dateKey, data: dayData });
+                }
+            }
+
+            const content = document.getElementById('weeklyReportContent');
+
+            if (weeklyData.length === 0) {
+                content.innerHTML = `
+                    <div class="report-empty">
+                        <div class="report-empty-icon">📅</div>
+                        <div>本周暂无打卡记录</div>
+                        <div style="font-size: 14px; margin-top: 10px;">完成任务后会自动生成周报</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let totalTasks = 0;
+            let completedTasks = 0;
+            let totalImages = 0;
+            const dailyStats = [];
+
+            weeklyData.forEach(day => {
+                const dayTasks = day.data.tasks || [];
+                const dayCompleted = dayTasks.filter(t => t.completed).length;
+                totalTasks += dayTasks.length;
+                completedTasks += dayCompleted;
+                totalImages += day.data.images || 0;
+                dailyStats.push({
+                    date: day.date,
+                    tasks: dayTasks.length,
+                    completed: dayCompleted,
+                    rate: dayTasks.length > 0 ? Math.round((dayCompleted / dayTasks.length) * 100) : 0
+                });
+            });
+
+            const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            const activeDays = weeklyData.length;
+
+            let dailyHTML = '';
+            dailyStats.forEach(stat => {
+                const [year, month, day] = stat.date.split('-');
+                dailyHTML += `
+                    <div class="report-task-item">
+                        <div class="report-task-date">${parseInt(month)}/${parseInt(day)}</div>
+                        <div class="report-task-text">任务: ${stat.tasks} 项 (${stat.completed} 项完成)</div>
+                        <div class="report-task-tag" style="background: ${stat.rate === 100 ? '#28a745' : stat.rate > 0 ? '#ffc107' : '#dc3545'}">${stat.rate}%</div>
+                    </div>
+                `;
+            });
+
+            content.innerHTML = `
+                <div class="report-summary">
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">统计周期</span>
+                        <span class="report-summary-value">${weekStart.getMonth() + 1}/${weekStart.getDate()} - ${weekEnd.getMonth() + 1}/${weekEnd.getDate()}</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">活跃天数</span>
+                        <span class="report-summary-value">${activeDays} / 7 天</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">任务总数</span>
+                        <span class="report-summary-value">${totalTasks} 项</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">完成任务</span>
+                        <span class="report-summary-value">${completedTasks} 项</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">完成率</span>
+                        <span class="report-summary-value">${completionRate}%</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">上传图片</span>
+                        <span class="report-summary-value">${totalImages} 张</span>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px; font-weight: bold; font-size: 16px; color: #333;">每日统计</div>
+                <div class="report-task-list">
+                    ${dailyHTML}
+                </div>
+            `;
+        }
+
+        async function generateMonthlyReport() {
+            const today = new Date();
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            const totalDays = monthEnd.getDate();
+
+            const monthlyData = [];
+            for (let day = 1; day <= totalDays; day++) {
+                const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayData = await getHistoryData(dateKey);
+                if (dayData) {
+                    monthlyData.push({ date: dateKey, data: dayData });
+                }
+            }
+
+            const content = document.getElementById('monthlyReportContent');
+
+            if (monthlyData.length === 0) {
+                content.innerHTML = `
+                    <div class="report-empty">
+                        <div class="report-empty-icon">📅</div>
+                        <div>本月暂无打卡记录</div>
+                        <div style="font-size: 14px; margin-top: 10px;">完成任务后会自动生成月报</div>
+                    </div>
+                `;
+                return;
+            }
+
+            let totalTasks = 0;
+            let completedTasks = 0;
+            let totalImages = 0;
+            const tags = new Set();
+
+            monthlyData.forEach(day => {
+                const dayTasks = day.data.tasks || [];
+                const dayCompleted = dayTasks.filter(t => t.completed);
+                totalTasks += dayTasks.length;
+                completedTasks += dayCompleted.length;
+                totalImages += day.data.images || 0;
+                dayCompleted.forEach(task => tags.add(task.tag));
+            });
+
+            const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            const activeDays = monthlyData.length;
+            const daysInMonth = totalDays;
+
+            content.innerHTML = `
+                <div class="report-summary">
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">统计周期</span>
+                        <span class="report-summary-value">${today.getFullYear()}年${today.getMonth() + 1}月</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">活跃天数</span>
+                        <span class="report-summary-value">${activeDays} / ${daysInMonth} 天</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">任务总数</span>
+                        <span class="report-summary-value">${totalTasks} 项</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">完成任务</span>
+                        <span class="report-summary-value">${completedTasks} 项</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">完成率</span>
+                        <span class="report-summary-value">${completionRate}%</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">上传图片</span>
+                        <span class="report-summary-value">${totalImages} 张</span>
+                    </div>
+                    <div class="report-summary-item">
+                        <span class="report-summary-label">涉及主题</span>
+                        <span class="report-summary-value">${Array.from(tags).join('、')}</span>
+                    </div>
+                </div>
+                <div class="report-empty">
+                    <div class="report-empty-icon">📊</div>
+                    <div>月报统计</div>
+                    <div style="font-size: 14px; margin-top: 10px;">本月共 ${activeDays} 天进行了学习打卡</div>
+                    <div style="font-size: 14px; margin-top: 5px;">平均每日完成 ${Math.round(completedTasks / activeDays)} 项任务</div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
