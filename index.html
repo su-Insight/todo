@@ -980,7 +980,7 @@
 <body>
     <div class="container">
         <div class="streak-card">
-            <div class="streak-number" id="streakCount">7</div>
+            <div class="streak-number" id="streakCount">0</div>
             <div class="streak-label">连续打卡天数</div>
         </div>
 
@@ -989,36 +989,6 @@
                 📋 今日任务
             </div>
             <ul class="task-list" id="taskList">
-                <li class="task-item">
-                    <input type="checkbox" class="task-checkbox" onchange="updateCheckinButton(); trackTaskCompletion(this)">
-                    <div class="task-content">
-                        <div class="task-text">完成数学复习第3章</div>
-                        <div class="task-tags">
-                            <span class="tag" style="background: #ff6b6b">数学</span>
-                        </div>
-                    </div>
-                    <button class="delete-task" onclick="deleteTask(this)">×</button>
-                </li>
-                <li class="task-item">
-                    <input type="checkbox" class="task-checkbox" onchange="updateCheckinButton(); trackTaskCompletion(this)">
-                    <div class="task-content">
-                        <div class="task-text">背诵英语单词100个</div>
-                        <div class="task-tags">
-                            <span class="tag" style="background: #4ecdc4">英语</span>
-                        </div>
-                    </div>
-                    <button class="delete-task" onclick="deleteTask(this)">×</button>
-                </li>
-                <li class="task-item">
-                    <input type="checkbox" class="task-checkbox" onchange="updateCheckinButton(); trackTaskCompletion(this)">
-                    <div class="task-content">
-                        <div class="task-text">政治选择题练习</div>
-                        <div class="task-tags">
-                            <span class="tag" style="background: #45b7d1">政治</span>
-                        </div>
-                    </div>
-                    <button class="delete-task" onclick="deleteTask(this)">×</button>
-                </li>
             </ul>
             <div class="add-task">
                 <input type="text" id="newTaskInput" placeholder="添加新任务...">
@@ -1032,15 +1002,6 @@
                 📅 明日任务
             </div>
             <ul class="task-list" id="tomorrowTaskListPage">
-                <li class="task-item">
-                    <div class="task-content">
-                        <div class="task-text">准备明日学习计划</div>
-                        <div class="task-tags">
-                            <span class="tag" style="background: #96ceb4">计划</span>
-                        </div>
-                    </div>
-                    <button class="delete-task" onclick="deleteTomorrowTaskPage(0)">×</button>
-                </li>
             </ul>
             <div class="add-task">
                 <input type="text" id="newTomorrowTaskInput" placeholder="添加明日任务...">
@@ -1239,7 +1200,7 @@
                 if (response.ok) {
                     const images = await response.json();
                     submittedImages = images.map(img => ({
-                        url: `${IMG_BASE_URL}${img.url}`,
+                        url: `${img.url}`,
                         filename: img.filename
                     }));
                     renderImagePreview();
@@ -1267,7 +1228,7 @@
                     
                     if (tasks.length === 0) {
                         console.log('No tasks found for today');
-                        taskList.innerHTML = '<li class="task-item" style="text-align: center; color: #999;">暂无任务，请添加</li>';
+                        taskList.innerHTML = '<li class="task-item" style="text-align: center; color: #999;">无任务</li>';
                     }
                     
                     tasks.forEach(task => {
@@ -1395,7 +1356,7 @@
                     const data = await response.json();
                     data.files.forEach(fileInfo => {
                         uploadedImages.push({
-                            url: `${IMG_BASE_URL}${fileInfo.url}`,
+                            url: `${fileInfo.url}`,
                             filename: fileInfo.filename
                         });
                     });
@@ -2092,7 +2053,7 @@
                     
                     images.forEach((img, index) => {
                         const imgElement = document.createElement('img');
-                        imgElement.src = `${IMG_BASE_URL}${img.url}`;
+                        imgElement.src = `${img.url}`;
                         imgElement.alt = `打卡图片${index + 1}`;
                         imgElement.onclick = () => openImageViewer(images, index);
                         imageList.appendChild(imgElement);
@@ -2130,7 +2091,7 @@
             const viewerImg = document.getElementById('viewerImage');
             const counter = document.getElementById('imageCounter');
             
-            viewerImg.src = `${IMG_BASE_URL}${images[startIndex].url}`;
+            viewerImg.src = `${images[startIndex].url}`;
             counter.textContent = `${startIndex + 1} / ${images.length}`;
             
             viewer.style.display = 'flex';
@@ -2159,7 +2120,7 @@
             const viewerImg = document.getElementById('viewerImage');
             const counter = document.getElementById('imageCounter');
             
-            viewerImg.src = `${IMG_BASE_URL}${currentImages[currentImageIndex].url}`;
+            viewerImg.src = `${currentImages[currentImageIndex].url}`;
             counter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
         }
 
