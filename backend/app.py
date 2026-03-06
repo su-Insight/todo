@@ -8,6 +8,9 @@ import os
 from datetime import datetime
 from werkzeug.utils import secure_filename
 
+# API 路径前缀
+API_PREFIX = '/todo/api'
+
 # 创建应用实例
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -26,14 +29,14 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 db.init_app(app)
 
 # 启用CORS
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+CORS(app, resources={r"/todo/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # 创建数据库表
 with app.app_context():
     db.create_all()
 
 # API接口
-@app.route('/api/history/<date>', methods=['GET'])
+@app.route(f'{API_PREFIX}/history/<date>', methods=['GET'])
 def get_history(date):
     """获取指定日期的打卡记录"""
     history = History.query.filter_by(date=date).first()
@@ -61,7 +64,7 @@ def get_history(date):
         'images': history.images
     })
 
-@app.route('/api/history', methods=['POST'])
+@app.route(f'{API_PREFIX}/history', methods=['POST'])
 def save_history():
     """保存打卡记录"""
     data = request.get_json()
@@ -81,7 +84,7 @@ def save_history():
     db.session.commit()
     return jsonify({'message': 'Record saved successfully'})
 
-@app.route('/api/history', methods=['GET'])
+@app.route(f'{API_PREFIX}/history', methods=['GET'])
 def get_all_history():
     """获取所有打卡记录"""
     histories = History.query.all()
@@ -94,7 +97,7 @@ def get_all_history():
         })
     return jsonify(result)
 
-@app.route('/api/streak', methods=['GET'])
+@app.route(f'{API_PREFIX}/streak', methods=['GET'])
 def get_streak():
     """计算连续打卡天数"""
     from datetime import datetime, timedelta
@@ -125,7 +128,7 @@ def get_streak():
     
     return jsonify({'streak': streak})
 
-@app.route('/api/tasks/<date>', methods=['GET'])
+@app.route(f'{API_PREFIX}/tasks/<date>', methods=['GET'])
 def get_tasks(date):
     """获取指定日期的任务"""
     tasks = Task.query.filter_by(date=date).all()
@@ -141,7 +144,7 @@ def get_tasks(date):
         })
     return jsonify(result)
 
-@app.route('/api/tasks/<int:task_id>', methods=['PUT'])
+@app.route(f'{API_PREFIX}/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
     """更新单个任务的状态"""
     task = Task.query.get(task_id)
@@ -162,7 +165,7 @@ def update_task(task_id):
     db.session.commit()
     return jsonify({'message': 'Task updated successfully'})
 
-@app.route('/api/tasks', methods=['POST'])
+@app.route(f'{API_PREFIX}/tasks', methods=['POST'])
 def create_task():
     """创建新任务"""
     data = request.get_json()
@@ -190,7 +193,7 @@ def create_task():
         'completed': new_task.completed == 1
     })
 
-@app.route('/api/tasks/<int:task_id>', methods=['DELETE'])
+@app.route(f'{API_PREFIX}/tasks/<int:task_id>', methods=['DELETE'])
 def delete_task(task_id):
     """删除任务"""
     task = Task.query.get(task_id)
@@ -201,7 +204,7 @@ def delete_task(task_id):
     db.session.commit()
     return jsonify({'message': 'Task deleted successfully'})
 
-@app.route('/api/tomorrow', methods=['GET'])
+@app.route(f'{API_PREFIX}/tomorrow', methods=['GET'])
 def get_tomorrow_tasks():
     """获取明日任务列表"""
     tomorrow = get_tomorrow_date()
@@ -216,7 +219,7 @@ def get_tomorrow_tasks():
         })
     return jsonify(result)
 
-@app.route('/api/tomorrow', methods=['POST'])
+@app.route(f'{API_PREFIX}/tomorrow', methods=['POST'])
 def save_tomorrow_tasks():
     """保存明日任务列表"""
     data = request.get_json()
@@ -240,7 +243,7 @@ def save_tomorrow_tasks():
     db.session.commit()
     return jsonify({'message': 'Tomorrow tasks saved successfully'})
 
-@app.route('/api/tomorrow', methods=['DELETE'])
+@app.route(f'{API_PREFIX}/tomorrow', methods=['DELETE'])
 def clear_tomorrow_tasks():
     """清空明日任务列表"""
     tomorrow = get_tomorrow_date()
@@ -258,7 +261,7 @@ def allowed_file(filename):
     """检查文件扩展名是否允许"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/api/images/upload', methods=['POST'])
+@app.route(f'{API_PREFIX}/images/upload', methods=['POST'])
 def upload_images():
     """上传图片"""
     if 'images' not in request.files:
@@ -290,7 +293,7 @@ def upload_images():
             
             uploaded_files.append({
                 'filename': filename,
-                'url': f'/api/images/{filename}'
+                'url': f'{API_PREFIX}/images/{filename}'
             })
     
     return jsonify({
@@ -298,12 +301,12 @@ def upload_images():
         'files': uploaded_files
     })
 
-@app.route('/api/images/<filename>', methods=['GET'])
+@app.route(f'{API_PREFIX}/images/<filename>', methods=['GET'])
 def get_image(filename):
     """获取图片"""
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-@app.route('/api/images/date/<date>', methods=['GET'])
+@app.route(f'{API_PREFIX}/images/date/<date>', methods=['GET'])
 def get_images_by_date(date):
     """获取指定日期的所有图片"""
     images = []
@@ -314,7 +317,7 @@ def get_images_by_date(date):
             if filename.startswith(f"{date}_") and allowed_file(filename):
                 images.append({
                     'filename': filename,
-                    'url': f'/api/images/{filename}'
+                    'url': f'{API_PREFIX}/images/{filename}'
                 })
     
     return jsonify(images)
