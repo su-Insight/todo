@@ -1184,9 +1184,10 @@
             if (hasCheckedIn) {
                 document.getElementById('todayTasksCard').style.display = 'none';
                 document.getElementById('tomorrowTasksCard').style.display = 'block';
+                document.getElementById('uploadArea').style.pointerEvents = 'none';
+                document.getElementById('uploadArea').style.opacity = '0.5';
                 showMessage('今日任务已全部完成！🎉', 'success');
                 loadTomorrowTasksPage();
-                await loadSubmittedImages();
             } else {
                 loadTodayTasks();
                 await loadSubmittedImages();
@@ -1945,7 +1946,15 @@
                 let tagsHTML = '';
                 if (dayData && dayData.tasks) {
                     const completedTasks = dayData.tasks.filter(t => t.completed);
+                    const uniqueTags = [];
+                    const seen = new Set();
                     completedTasks.forEach(task => {
+                        if (!seen.has(task.tag)) {
+                            seen.add(task.tag);
+                            uniqueTags.push(task);
+                        }
+                    });
+                    uniqueTags.forEach(task => {
                         tagsHTML += `<span class="calendar-day-tag" style="background: ${task.tagColor}">${task.tag}</span>`;
                     });
                 }
