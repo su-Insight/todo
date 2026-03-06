@@ -322,5 +322,18 @@ def get_images_by_date(date):
     
     return jsonify(images)
 
+@app.route(f'{API_PREFIX}/images/<filename>', methods=['DELETE'])
+def delete_image(filename):
+    """删除指定图片"""
+    try:
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        if os.path.exists(filepath):
+            os.remove(filepath)
+            return jsonify({'message': 'Image deleted successfully'})
+        else:
+            return jsonify({'error': 'Image not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

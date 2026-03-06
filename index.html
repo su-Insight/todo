@@ -1187,6 +1187,7 @@
 
     <script>
         let uploadedImages = [];
+        let submittedImages = [];
         let tomorrowTasks = [];
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
@@ -1216,20 +1217,35 @@
         async function checkTodayStatus() {
             const todayKey = getTodayKey();
             
-            // 检查今天是否已经打卡（通过检查History表）
             const historyResponse = await fetch(`${API_BASE_URL}/history/${todayKey}`);
             const hasCheckedIn = historyResponse.ok;
             
             if (hasCheckedIn) {
-                // 今天已经打卡，显示明日任务区域
                 document.getElementById('todayTasksCard').style.display = 'none';
                 document.getElementById('tomorrowTasksCard').style.display = 'block';
-                // 显示今日任务已完成提示
                 showMessage('今日任务已全部完成！🎉', 'success');
                 loadTomorrowTasksPage();
+                await loadSubmittedImages();
             } else {
-                // 今天还没打卡，显示今日任务区域并恢复任务状态
                 loadTodayTasks();
+                await loadSubmittedImages();
+            }
+        }
+        
+        async function loadSubmittedImages() {
+            const todayKey = getTodayKey();
+            try {
+                const response = await fetch(`${API_BASE_URL}/images/date/${todayKey}`);
+                if (response.ok) {
+                    const images = await response.json();
+                    submittedImages = images.map(img => ({
+                        url: `${IMG_BASE_URL}${img.url}`,
+                        filename: img.filename
+                    }));
+                    renderImagePreview();
+                }
+            } catch (error) {
+                console.error('加载已提交图片失败:', error);
             }
         }
         
@@ -1398,7 +1414,9 @@
         function renderImagePreview() {
             const preview = document.getElementById('imagePreview');
             preview.innerHTML = '';
-            uploadedImages.forEach((img, index) => {
+            
+            const allImages = [...submittedImages, ...uploadedImages];
+            allImages.forEach((img, index) => {
                 const item = document.createElement('div');
                 item.className = 'preview-item';
                 item.innerHTML = `
@@ -1409,8 +1427,21 @@
             });
         }
 
-        function removeImage(index) {
-            uploadedImages.splice(index, 1);
+        async function removeImage(index) {
+            const allImages = [...submittedImages, ...uploadedImages];
+            const image = allImages[index];
+            if (image && image.filename) {
+                await fetch(`${API_BASE_URL}/images/${image.filename}`, {
+                    method: 'DELETE'
+                });
+            }
+            
+            if (index < submittedImages.length) {
+                submittedImages.splice(index, 1);
+            } else {
+                uploadedImages.splice(index - submittedImages.length, 1);
+            }
+            
             renderImagePreview();
             updateCheckinButton();
         }
@@ -1534,7 +1565,7 @@
         function updateCheckinButton() {
             const checkboxes = document.querySelectorAll('.task-checkbox');
             const allCompleted = Array.from(checkboxes).every(cb => cb.checked);
-            const hasImages = uploadedImages.length > 0;
+            const hasImages = uploadedImages.length > 0 || submittedImages.length > 0;
             const checkinBtn = document.getElementById('checkinBtn');
 
             checkinBtn.disabled = !(allCompleted && hasImages);
@@ -1543,7 +1574,7 @@
         async function checkin() {
             const checkboxes = document.querySelectorAll('.task-checkbox');
             const allCompleted = Array.from(checkboxes).every(cb => cb.checked);
-            const hasImages = uploadedImages.length > 0;
+            const hasImages = uploadedImages.length > 0 || submittedImages.length > 0;
 
             if (!allCompleted) {
                 showMessage('请先完成所有任务！', 'error');
@@ -1582,6 +1613,7 @@
 
             // 清空上传的图片，但保留任务的完成状态
             uploadedImages = [];
+            submittedImages = [];
             document.getElementById('imagePreview').innerHTML = '';
             updateCheckinButton();
             
